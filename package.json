@@ -1,0 +1,33 @@
+{
+  "name": "@septeo/payments-flow-schemas",
+  "version": "0.1.0",
+  "description": "Composant React (schémas de flux interactifs de l'API publique de paiement Septeo) à intégrer dans le BO — Intégration › Documentation API Public.",
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles": "./src/flowSchemas.css"
+  },
+  "files": [
+    "src"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "typescript": "^5.9.3"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
