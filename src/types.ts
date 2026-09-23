@@ -22,6 +22,8 @@ export interface Family {
   tag: string;
   title: string;
   lead: string;
+  /** Type d'interaction du paiement d'origine, affiché en badge : ECOM / MOTO / ContAuth / POS (ou combinaison). */
+  flow?: string;
   schemas: Schema[];
 }
 

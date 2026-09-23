@@ -39,6 +39,10 @@
 .pfs .fam-lead{color:var(--muted);margin:.2rem 0 0}
 .pfs .schema{border:1px solid var(--line);border-radius:12px;padding:15px 16px;margin:16px 0;background:var(--surface2)}
 .pfs .schema h4{margin:0 0 6px;font-size:1.06rem;letter-spacing:-.01em;color:var(--ink)}
+.pfs .flowbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:3px 11px;border-radius:999px;margin:0 0 10px;color:var(--accent);background:var(--accent-weak);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line))}
+.pfs .flowbadge.moto{color:var(--warn);background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
+.pfs .flowbadge.pos{color:var(--send-ink);background:var(--send-weak);border-color:color-mix(in srgb,var(--send) 40%,var(--line))}
+.pfs .flowbadge.contauth{color:var(--ok);background:var(--ok-bg);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
 .pfs .axes{display:inline-flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .pfs .axes .ax{font-family:var(--mono);font-size:.7rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--muted)}
 .pfs .axes .ax.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
@@ -59,6 +63,15 @@
 .pfs .node.call .n-rect{fill:var(--send);stroke:var(--send-ink)}
 .pfs .node.call .n-txt{fill:#fff;font-weight:600}
 .pfs .node.call:hover .n-rect{filter:brightness(1.08)}
+/* Action côté client / navigateur (Drop-in, saisie carte) : bleu. */
+.pfs .node.client .n-rect{fill:var(--accent-weak);stroke:var(--accent)}
+.pfs .node.client .n-txt{fill:var(--accent);font-weight:600}
+/* Événement reçu (webhook Adyen → toi) : vert. */
+.pfs .node.hook .n-rect{fill:var(--ok-bg);stroke:var(--ok)}
+.pfs .node.hook .n-txt{fill:var(--ok);font-weight:600}
+/* Webhook cliquable (détail de la notification). */
+.pfs .node.whk{cursor:pointer}
+.pfs .node.whk:hover .n-rect{filter:brightness(1.06)}
 .pfs .edge{fill:none;stroke:currentColor;stroke-width:1.4px;opacity:.65}
 .pfs .edge-lbl{fill:var(--muted);font-family:var(--sans);font-size:10.5px}
 .pfs .edge-lbl-bg{fill:var(--surface)}
@@ -84,6 +97,9 @@
 .pfs .modal-h .mm.post{color:var(--post);background:var(--post-bg)}
 .pfs .modal-h .mm.get{color:var(--get);background:var(--get-bg)}
 .pfs .modal-h .mm.del{color:var(--del);background:var(--del-bg)}
+.pfs .modal-h .mm.wh{color:var(--ok);background:var(--ok-bg)}
+.pfs .modal-h .tu.recv{color:var(--ok)}
+.pfs .modal-h .arw.recv{color:var(--ok)}
 .pfs .modal-h .url{font-family:var(--mono);font-size:.8rem;color:var(--ink);word-break:break-all;flex:1;min-width:140px}
 .pfs .modal-h .x{border:1px solid var(--line);background:var(--surface2);color:var(--muted);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1}
 .pfs .modal-b{padding:16px 18px}

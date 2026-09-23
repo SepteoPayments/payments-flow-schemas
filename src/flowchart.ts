@@ -18,21 +18,25 @@ export function hl(json: string): string {
     .replace(/:\s*(-?\d+)/g, ': <span class="n">$1</span>');
 }
 
-interface Ep { id: string; shape: 'rect' | 'dec' | null; label: string | null; call: boolean; }
-interface FNode { id: string; label: string; shape: string; call: boolean; payload: { key: string; method: string; path: string } | null; w?: number; h?: number; x?: number; y?: number; lines?: string[]; }
+interface Ep { id: string; shape: 'rect' | 'dec' | null; label: string | null; call: boolean; kind: string | null; }
+interface FNode { id: string; label: string; shape: string; call: boolean; kind: string | null; payload: { key: string; method: string; path: string } | null; hookKey?: string | null; w?: number; h?: number; x?: number; y?: number; lines?: string[]; }
 interface FEdge { from: string; to: string; label: string; }
 interface Graph { nodes: Record<string, FNode>; order: string[]; edges: FEdge[]; W?: number; H?: number; }
 
 function parseEp(tok: string): Ep {
   const idm = tok.match(/^([A-Za-z0-9_]+)/);
   const id = idm ? idm[1] : tok;
-  const call = /:::call/.test(tok);
+  // `:::<classe>` porte le type de nœud : `call` (appel API, cliquable), `client` (action côté
+  // navigateur/agent), `hook` (événement reçu, ex. webhook). Absent = état simple.
+  const km = tok.match(/:::(\w+)/);
+  const kind = km ? km[1] : null;
+  const call = kind === 'call';
   const r = tok.match(/\["([\s\S]*?)"\]/);
   const d = tok.match(/\{"([\s\S]*?)"\}/);
   let shape: 'rect' | 'dec' | null = null;
   let label: string | null = null;
   if (r) { shape = 'rect'; label = r[1]; } else if (d) { shape = 'dec'; label = d[1]; }
-  return { id, shape, label, call };
+  return { id, shape, label, call, kind };
 }
 
 function parseFlow(src: string): Graph {
@@ -40,15 +44,18 @@ function parseFlow(src: string): Graph {
   const order: string[] = [];
   const edges: FEdge[] = [];
   function ensure(ep: Ep): FNode {
-    if (!N[ep.id]) { N[ep.id] = { id: ep.id, label: ep.label || ep.id, shape: ep.shape || 'rect', call: !!ep.call, payload: null }; order.push(ep.id); }
-    else { if (ep.shape) N[ep.id].shape = ep.shape; if (ep.label) N[ep.id].label = ep.label; if (ep.call) N[ep.id].call = true; }
+    if (!N[ep.id]) { N[ep.id] = { id: ep.id, label: ep.label || ep.id, shape: ep.shape || 'rect', call: !!ep.call, kind: ep.kind || null, payload: null }; order.push(ep.id); }
+    else { if (ep.shape) N[ep.id].shape = ep.shape; if (ep.label) N[ep.id].label = ep.label; if (ep.call) N[ep.id].call = true; if (ep.kind) N[ep.id].kind = ep.kind; }
     return N[ep.id];
   }
   src.split('\n').forEach((raw) => {
     const line = raw.trim(); if (!line) return;
     if (line.indexOf('click ') === 0) {
       const mm = line.match(/^click\s+(\w+)\s+call\s+pay\("([^"]*)","([^"]*)","([^"]*)"\)/);
-      if (mm) { const nn = ensure({ id: mm[1], shape: null, label: null, call: true }); nn.call = true; nn.payload = { key: mm[2], method: mm[3], path: mm[4] }; }
+      if (mm) { const nn = ensure({ id: mm[1], shape: null, label: null, call: true, kind: 'call' }); nn.call = true; nn.payload = { key: mm[2], method: mm[3], path: mm[4] }; }
+      // `click N wh("<clé>")` : rattache le corps d'un webhook reçu à un nœud événement (cliquable).
+      const wm = line.match(/^click\s+(\w+)\s+wh\("([^"]*)"\)/);
+      if (wm) { const nn = ensure({ id: wm[1], shape: null, label: null, call: false, kind: 'hook' }); nn.hookKey = wm[2]; }
       return;
     }
     if (line.indexOf('-->') < 0) return;
@@ -101,9 +108,13 @@ function svgOf(g: Graph): string {
   });
   g.order.forEach((id) => {
     const n = g.nodes[id]; if (n.x == null) return;
-    const isEnd = !n.call && n.shape !== 'dec' && outdeg(g, id) === 0;
-    const cls = 'node' + (n.call ? ' call' : '') + (n.shape === 'dec' ? ' dec' : '') + (isEnd ? ' end' : '');
-    const attr = n.call && n.payload ? (' data-k="' + esc(n.payload.key) + '" data-m="' + esc(n.payload.method) + '" data-p="' + esc(n.payload.path) + '"') : '';
+    const typed = n.kind === 'client' || n.kind === 'hook';
+    const isEnd = !n.call && !typed && n.shape !== 'dec' && outdeg(g, id) === 0;
+    const cls = 'node' + (n.call ? ' call' : '') + (n.kind === 'client' ? ' client' : '')
+      + (n.kind === 'hook' ? ' hook' : '') + (n.hookKey ? ' whk' : '') + (n.shape === 'dec' ? ' dec' : '') + (isEnd ? ' end' : '');
+    const attr = n.call && n.payload
+      ? (' data-k="' + esc(n.payload.key) + '" data-m="' + esc(n.payload.method) + '" data-p="' + esc(n.payload.path) + '"')
+      : (n.hookKey ? (' data-wh="' + esc(n.hookKey) + '"') : '');
     const lines = n.lines as string[];
     s += '<g class="' + cls + '"' + attr + '>';
     s += '<rect class="n-rect" x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '" rx="8"/>';

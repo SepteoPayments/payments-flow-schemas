@@ -11,7 +11,7 @@
  */
 import { useState, useCallback, useEffect } from 'react';
 import type { MouseEvent } from 'react';
-import { families, payloads } from './data';
+import { families, payloads, webhooks } from './data';
 import { flowToSvg, hl } from './flowchart';
 import type { Payload } from './types';
 import './flowSchemas.css';
@@ -48,36 +48,55 @@ function mcls(m: string): string {
   return m === 'GET' ? 'get' : m === 'DELETE' ? 'del' : 'post';
 }
 
+/** Classe de couleur du badge d'interaction, dérivée du libellé de flux. */
+function flowCls(f: string): string {
+  if (/MOTO/.test(f)) return 'moto';
+  if (/POS/.test(f)) return 'pos';
+  if (/ContAuth/.test(f) && !/ECOM/.test(f)) return 'contauth';
+  return '';
+}
+function flowIcon(f: string): string {
+  if (/POS/.test(f)) return '🖥️';
+  if (/MOTO/.test(f)) return '📞';
+  if (/ContAuth/.test(f) && !/ECOM/.test(f)) return '🔁';
+  return '🛒';
+}
+
 export function FlowSchemas({ theme, apiBase = '/api/public/v1', className }: FlowSchemasProps) {
   const [payload, setPayload] = useState<Payload | null>(null);
+  const [webhook, setWebhook] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const onDiagClick = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    const g = (e.target as HTMLElement).closest?.('.node.call') as HTMLElement | null;
+    const g = (e.target as HTMLElement).closest?.('.node.call, .node.whk') as HTMLElement | null;
     if (!g) return;
+    const wh = g.getAttribute('data-wh');
+    if (wh) { setWebhook(wh); setPayload(null); setCopied(false); return; }
     setPayload({
       key: g.getAttribute('data-k') || '',
       method: (g.getAttribute('data-m') || 'POST') as Payload['method'],
       path: g.getAttribute('data-p') || '',
     });
+    setWebhook(null);
     setCopied(false);
   }, []);
 
   useEffect(() => {
-    if (!payload) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPayload(null); };
+    if (!payload && !webhook) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setPayload(null); setWebhook(null); } };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [payload]);
+  }, [payload, webhook]);
 
   const body = payload && payload.key && payloads[payload.key] ? payloads[payload.key] : null;
   const url = payload ? apiBase + payload.path : '';
 
-  const copy = () => {
-    if (body && navigator.clipboard) navigator.clipboard.writeText(body).catch(() => undefined);
+  const copyText = (t: string | null) => {
+    if (t && navigator.clipboard) navigator.clipboard.writeText(t).catch(() => undefined);
     setCopied(true);
     setTimeout(() => setCopied(false), 1300);
   };
+  const copy = () => copyText(body);
 
   return (
     <div className={'pfs' + (className ? ' ' + className : '')} data-theme={theme}>
@@ -101,6 +120,7 @@ export function FlowSchemas({ theme, apiBase = '/api/public/v1', className }: Fl
             {fam.schemas.map((s, i) => (
               <div className="schema" key={i}>
                 <h4>{s.h}</h4>
+                {fam.flow && <div><span className={'flowbadge ' + flowCls(fam.flow)}>{flowIcon(fam.flow)} {fam.flow}</span></div>}
                 <div className="axes">
                   {s.axes.map((a, j) => <span className={'ax ' + (a[1] || '')} key={j}>{a[0]}</span>)}
                 </div>
@@ -133,8 +153,27 @@ export function FlowSchemas({ theme, apiBase = '/api/public/v1', className }: Fl
                   <button className="cp" onClick={copy}>{copied ? 'Copié ✓' : 'Copier le payload'}</button>
                 </>
               ) : (
-                <p className="nobody">Pas de corps JSON : tout est dans l'URL (paramètres <code className="inl">shopperReference</code> + <code className="inl">publicStoreId</code>).</p>
+                <p className="nobody">Pas de corps JSON : cet appel ne porte pas de payload (les paramètres sont dans l'URL).</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {webhook && webhooks[webhook] && (
+        <div className="ov show" role="dialog" aria-modal="true"
+             onClick={(e) => { if (e.target === e.currentTarget) setWebhook(null); }}>
+          <div className="modal">
+            <div className="modal-h">
+              <span className="tu recv">TU REÇOIS</span>
+              <span className="arw recv">←</span>
+              <span className="mm wh">webhook</span>
+              <span className="url">Adyen → notification-service → ton PMS</span>
+              <button className="x" aria-label="Fermer" onClick={() => setWebhook(null)}>✕</button>
+            </div>
+            <div className="modal-b">
+              <pre dangerouslySetInnerHTML={{ __html: hl(webhooks[webhook]) }} />
+              <button className="cp" onClick={() => copyText(webhooks[webhook])}>{copied ? 'Copié ✓' : 'Copier le webhook'}</button>
             </div>
           </div>
         </div>
