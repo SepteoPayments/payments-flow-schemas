@@ -30,13 +30,14 @@
 .pfs *{box-sizing:border-box}
 .pfs-wrap{max-width:1120px;margin:0 auto;padding:0 4px 40px}
 .pfs-hero{padding:10px 0 6px}
-.pfs-hero h2{font-size:1.7rem;letter-spacing:-.02em;margin:.2rem 0;text-wrap:balance;color:var(--ink)}
-.pfs-hero p{color:var(--muted);max-width:76ch;margin:.4rem 0 0}
+/* Titre et intro : même rendu que la doc du BO (titre orange, texte Inter 14px). */
+.pfs-hero h2{font-family:Inter,system-ui,sans-serif;font-size:1.25rem;font-weight:600;line-height:1.75rem;letter-spacing:normal;margin:.2rem 0;text-wrap:balance;color:var(--color-secondary-main,#fa420f)}
+.pfs-hero p{font-family:Inter,system-ui,sans-serif;font-size:.875rem;line-height:1.25rem;color:var(--color-gray-95,var(--ink));max-width:none;margin:.4rem 0 0}
 
 .pfs-step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:16px 0}
 .pfs-fam{margin:0 0 4px;font-size:1.25rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--ink)}
 .pfs-fam .tag{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:var(--accent-weak);color:var(--accent);padding:3px 8px;border-radius:99px}
-.pfs .fam-lead{color:var(--muted);margin:.2rem 0 0}
+.pfs .fam-lead{font-family:Inter,system-ui,sans-serif;font-size:.875rem;line-height:1.25rem;color:var(--color-gray-95,var(--ink));margin:.2rem 0 0}
 .pfs .schema{border:1px solid var(--line);border-radius:12px;padding:15px 16px;margin:16px 0;background:var(--surface2)}
 .pfs .schema h4{margin:0 0 6px;font-size:1.06rem;letter-spacing:-.01em;color:var(--ink)}
 .pfs .flowbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:3px 11px;border-radius:999px;margin:0 0 10px;color:var(--accent);background:var(--accent-weak);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line))}
