@@ -1,4 +1,4 @@
-# @septeo/payments-flow-schemas
+# @septeo-payments/payments-flow-schemas
 
 Composant **React** autonome affichant les **schémas de flux interactifs** de l'API publique de paiement Septeo :
 pour chaque famille d'opération (ajustement, prolongation, capture, remboursement, tokenisation, order ANCV+CB…),
@@ -15,7 +15,7 @@ Pensé pour être posé tel quel dans le BO, page **Intégration › Documentati
 
 ```tsx
 // src/presentation/application/integrateurs/documentation/documentation_view.tsx
-import { FlowSchemas } from '@septeo/payments-flow-schemas';
+import { FlowSchemas } from '@septeo-payments/payments-flow-schemas';
 
 export function DocumentationView() {
   // theme optionnel : passe le thème MUI courant si tu veux le forcer
@@ -91,6 +91,16 @@ src/
 Le schéma doit rester fidèle à **public-transaction-service** (branche `main`). Un **skill dédié** (harnais de
 sécurité : lecture seule Azure, jamais de merge, s'arrête avant commit, un humain relit/merge) proposera les mises à
 jour de `src/data.ts` **par branche** sur ce repo, en comparant à `main`. Il ne touche jamais au style.
+
+## Publier une version
+
+Le code reste sur GitHub. Le paquet installable est publié sur le flux Azure `septeo-payment-feed` quand un tag correspond exactement à `version` dans `package.json`.
+
+1. Monter `version` dans `package.json` (exemple : `0.2.0`).
+2. Merger sur `main`.
+3. Pousser le tag correspondant : `git tag v0.2.0 && git push origin v0.2.0`.
+
+L'Action refuse de publier si le tag n'est pas `v` + la version. Une version déjà publiée ne se réécrit pas.
 
 ## Dév / typecheck
 

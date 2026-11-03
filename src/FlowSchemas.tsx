@@ -3,7 +3,7 @@
  * publique de paiement, chaque case coral ouvrant le payload exact. Style scopé sous `.pfs` (aucune fuite
  * dans le BO). À poser tel quel dans la page Intégration → Documentation API Public.
  *
- *   import { FlowSchemas } from '@septeo/payments-flow-schemas';
+ *   import { FlowSchemas } from '@septeo-payments/payments-flow-schemas';
  *   <FlowSchemas />                       // suit prefers-color-scheme
  *   <FlowSchemas theme="light" />         // force le thème (ex. thème MUI courant)
  *
