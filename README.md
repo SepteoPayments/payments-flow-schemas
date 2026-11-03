@@ -92,15 +92,42 @@ Le schéma doit rester fidèle à **public-transaction-service** (branche `main`
 sécurité : lecture seule Azure, jamais de merge, s'arrête avant commit, un humain relit/merge) proposera les mises à
 jour de `src/data.ts` **par branche** sur ce repo, en comparant à `main`. Il ne touche jamais au style.
 
-## Publier une version
+## Publier une nouvelle version
 
-Le code reste sur GitHub. Le paquet installable est publié sur le flux Azure `septeo-payment-feed` quand un tag correspond exactement à `version` dans `package.json`.
+Le code se modifie dans ce dépôt. Le back-office ne change pas tout seul : il affiche la version écrite dans son `package.json`. Le secret GitHub `AZURE_NPM_PUBLISH_TOKEN` est déjà en place. Une publication ordinaire ne demande pas de nouveau jeton Azure.
 
-1. Monter `version` dans `package.json` (exemple : `0.2.0`).
-2. Merger sur `main`.
-3. Pousser le tag correspondant : `git tag v0.2.0 && git push origin v0.2.0`.
+1. Modifier le contenu. Pour un texte, un payload ou un schéma, éditer `src/data.ts`.
+2. Dans le même changement, monter `version` dans `package.json`. Exemple : `0.1.0` devient `0.2.0`. Un numéro déjà publié ne peut pas être réécrit.
+3. Faire relire le changement et le merger sur `main`. Le `package.json` mergé doit contenir ce nouveau numéro.
+4. Se placer sur ce commit de `main`, puis pousser le tag qui est exactement `v` suivi de la version :
 
-L'Action refuse de publier si le tag n'est pas `v` + la version. Une version déjà publiée ne se réécrit pas.
+```bash
+git checkout main
+git pull
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+5. L'Action GitHub **Publish** construit le composant et le dépose sur le flux Azure `septeo-payment-feed`. Elle s'arrête si le tag n'est pas `v` + la version du `package.json`. Le résultat est dans l'onglet Actions de ce dépôt.
+6. Vérifier que la version est listée sur le flux : [septeo-payment-feed](https://dev.azure.com/Septeo-Paiement/septeo-payment/_artifacts/feed/septeo-payment-feed).
+
+Si l'Action échoue avec une erreur d'authentification, le secret GitHub a expiré. Quelqu'un qui a le rôle **Feed Publisher** sur ce flux doit le renouveler. Le nom du secret reste `AZURE_NPM_PUBLISH_TOKEN`.
+
+## Mettre à jour le back-office
+
+Le tag ne met pas le front à jour. Une fois la version visible sur le flux, dans `front-application/package.json`, remplacer le numéro :
+
+```json
+"@septeo-payments/payments-flow-schemas": "0.2.0"
+```
+
+Le numéro est exact, sans `^`. Puis, à la racine de `front-application` :
+
+```bash
+npm install
+```
+
+Tant que cette ligne garde l'ancien numéro, l'onglet Diagramme de flux continue d'afficher l'ancienne version.
 
 ## Dév / typecheck
 
